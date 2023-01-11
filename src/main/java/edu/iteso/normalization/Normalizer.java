@@ -12,7 +12,7 @@ public class Normalizer {
     public static Set<Table> normalize(Table table) {
         table = Normalizer.to1FN(table);
         Set<Table> database = Normalizer.to2FN(table);
-        database = Normalizer.to3FN(table);
+        database = Normalizer.to3FN(database);
         return database;
     }
 

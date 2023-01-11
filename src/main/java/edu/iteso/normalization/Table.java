@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class Table implements Iterable<Row> {
-
     private final String name;
     private final List<String> header;
     private final Map<String, Integer> fieldIndex;

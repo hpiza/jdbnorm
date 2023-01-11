@@ -10,10 +10,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Table table = Table.loadFromFile(new File("datasets/inscripciones.csv"));
         System.out.println(table.getName() + ": " + table.columns() + " x " + table.rows());
-        System.out.println(table);
         System.out.println("-------");
         Set<Table> database = table.normalize();
-        for(Table t: database) System.out.println(t);
+        for(Table t: database) System.out.println(t.getName() + ": " + t.columns() + " x " + t.rows());
     }
 }
 

@@ -1,0 +1,7 @@
+key1,field1,,,field2
+A1,aaa,bbb,,123
+A2,aaa,ccc,,456
+A3,bbb,,,123
+B1,aaa,bbb,ccc,456
+B2,bbb,ccc,aaa,123
+B3,ddd,aaa,,456

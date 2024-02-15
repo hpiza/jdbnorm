@@ -6,24 +6,28 @@ public class Database implements Iterable<Table> {
 
     private final Map<String, Table> nameTableMap = new HashMap<>();
 
+    private final List<Table> tableList = new LinkedList<>();
+
     public Database(Table ... tables) { addAll(tables); }
 
     @Override
     public Iterator<Table> iterator() {
-        return this.nameTableMap.values().iterator();
+        return this.tableList.iterator();
     }
 
-    public void add(Table table) {
+    public void add(Table table, boolean insertFirst) {
         if(nameTableMap.containsKey(table.getName())) return;
         nameTableMap.put(table.getName(), table);
+        if(insertFirst) tableList.add(0, table);
+        else tableList.add(table);
     }
 
     public void addAll(Table ... tables) {
-        for(Table t: tables) add(t);
+        for(Table t: tables) add(t, false);
     }
 
     public void add(Database db) {
-        for(Table t: db) add(t);
+        for(Table t: db) add(t, false);
     }
 
     public int size() {
@@ -35,6 +39,7 @@ public class Database implements Iterable<Table> {
     }
 
     public Table getTable(String tableName) {
+        if(!this.nameTableMap.containsKey(tableName)) throw new RuntimeException(String.format("Table %s does not exist", tableName));
         return this.nameTableMap.get(tableName);
     }
 

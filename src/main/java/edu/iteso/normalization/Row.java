@@ -1,18 +1,17 @@
 package edu.iteso.normalization;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Row {
-
+public class Row implements Iterable<String> {
     private ArrayList<String> values;
-
     public Row() {
-        this.values = new ArrayList<String>();
+        this.values = new ArrayList<>();
     }
 
     public Row(String[] valuesArray) {
-        this.values = new ArrayList<String>(valuesArray.length);
+        this.values = new ArrayList<>(valuesArray.length);
         for(String v : valuesArray) values.add(v);
     }
 
@@ -67,4 +66,8 @@ public class Row {
         return stringArray;
     }
 
+    @Override
+    public Iterator<String> iterator() {
+        return this.values.iterator();
+    }
 }

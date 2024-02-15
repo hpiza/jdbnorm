@@ -1,83 +1,14 @@
 package edu.iteso.normalization;
 
-import java.sql.Array;
 import java.util.*;
 
-public class FirstNF implements Normalizer {
-
-    /*
-    public Set<Table> normalize(Dataset dataset) {
-        //if(isNormalized(dataset).isNormalized) return new HashSet<>();
-
-        Table table1FN = new Table(dataset.getName() + "_1NF");
-        int columns = 0;
-        List<String> fieldNames = new ArrayList<>();
-
-//      Añadir a la nueva tabla todos los campos con título de la tabla origen
-//      y registrar el inicio y el fin de cada atributo multivaluado
-        int first = -1;
-        int end = -1;
-        ArrayList<Pair<Integer, Integer>> multiValuedAtt = new ArrayList<Pair<Integer, Integer>>();
-        for(int f = 0; f < dataset.getColumns(); f ++) {
-            if(dataset.isUntitled(f)) {
-                if(first < 0) {
-                    first = f - 1;
-                    end = -1;
-                }
-            }
-            else {
-                if(first >= 0) {
-                    end = f - 1;
-                    multiValuedAtt.add(new IntPair(first, end));
-                    first = -1;
-                }
-                table1FN.addField(dataset.getField(f));
-            }
-        }
-        if(first >= 0 && end < 0) multiValuedAtt.add(new IntPair(first, dataset.getColumns() - 1));
-
-        for(String[] stringRow: dataset) {
-            if(multiValuedAtt.isEmpty()) {
-                table1FN.addRow(stringRow);
-                continue;
-            }
-            Row newRow = new Row();
-            for(int i = 0; i < dataset.getColumns(); i ++) {
-                if(!dataset.isUntitled(i)) newRow.add(stringRow[i]);
-            }
-            table1FN.addRow(newRow);
-            int firstIndex = table1FN.rows() - 1;
-            int targetCol = multiValuedAtt.get(0).getFirst();
-            for(int mv = 0; mv < multiValuedAtt.size(); mv ++) {
-                int startMV = multiValuedAtt.get(mv).getFirst();
-                int endMV   = multiValuedAtt.get(mv).getSecond();
-                if(mv > 0) targetCol += startMV - multiValuedAtt.get(mv - 1).getSecond();
-                int lastIndex = table1FN.rows() - 1;
-                for(int i = startMV + 1; i <= endMV; i ++) {
-                    String value = stringRow[i];
-                    if(value == null || value.equals("")) continue;
-                    for(int j = firstIndex; j <= lastIndex; j ++) {
-                        Row veryCurrentRow = table1FN.get(j);
-                        Row veryNewRow = new Row();
-                        for(int k = 0; k < table1FN.columns(); k ++) {
-                            if(k == targetCol) veryNewRow.add(value);
-                            else veryNewRow.add(veryCurrentRow.get(k));
-                        }
-                        table1FN.addRow(veryNewRow);
-                    }
-                }
-            }
-        }
-        findPrimaryKey(table1FN);
-        return Set.of(table1FN);
-    }
-    */
+public class FirstNF extends Normalizer {
 
     @Override
     public Database normalize(Table table) {
         if(isNormalized(table).isNormalized) return new Database(table);
 
-        Table table1FN = new Table(table.getName() + "_1FN");
+        Table table1FN = new Table(table.getName());
         Set<String> fieldSet = new HashSet();
 
 //		Añadir a la nueva tabla todos los campos con título de la tabla origen
@@ -211,7 +142,7 @@ public class FirstNF implements Normalizer {
                 for (Integer J : Andf) {
 //					Si J ya se encuentra en phi, ignorar
                     if (phi.contains(J)) continue;
-                    if (NormalizeUtils.defines(phi, J, table)) {
+                    if (getDependencyCalculator().isDependent(table, phi, J)) {
                         Adef.add(J);
                         Key key = Key.fromFieldIndices(phi, table);
                         table.addDependency(key, J);
@@ -257,5 +188,4 @@ public class FirstNF implements Normalizer {
             buildSubset(originalSet, subsetClone, powerSet, size, I);
         }
     }
-
 }

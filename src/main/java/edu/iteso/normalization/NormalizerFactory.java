@@ -2,7 +2,7 @@ package edu.iteso.normalization;
 
 import java.util.Map;
 
-public class Normalizers {
+public class NormalizerFactory {
 
     private static final Map<String, Normalizer> instances =
             Map.of("First", new FirstNF(),

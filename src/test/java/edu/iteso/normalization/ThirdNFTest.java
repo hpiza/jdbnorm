@@ -49,7 +49,7 @@ public class ThirdNFTest {
     @Test
     void testNormalizeWithoutDependencies() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableNoDependencies);
         Database db = thirdNF.normalize(tableNoDependencies);
@@ -65,7 +65,7 @@ public class ThirdNFTest {
     @Test
     void testNormalizeWithDependencies() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableDependencies);
         Database db = thirdNF.normalize(tableDependencies);
@@ -73,12 +73,12 @@ public class ThirdNFTest {
         assertFalse(result.isNormalized);
         assertNotNull(db);
         assertEquals(db.size(), 2);
-        assertTrue(db.containsTable("F1"));
-        assertTrue(db.containsTable("F2"));
-        Table tableF1 = db.getTable("F1");
+        assertTrue(db.containsTable("Catalog_F1"));
+        assertTrue(db.containsTable("Catalog_F2"));
+        Table tableF1 = db.getTable("Catalog_F1");
         assertEquals(2, tableF1.columns());
         assertEquals(tableDependencies.rows(), tableF1.rows());
-        Table tableF2 = db.getTable("F2");
+        Table tableF2 = db.getTable("Catalog_F2");
         assertEquals(2, tableF2.columns());
         assertEquals(4, tableF2.rows());
     }
@@ -86,7 +86,7 @@ public class ThirdNFTest {
     @Test
     void testNormalizeWithTransitives() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableTransitives);
         Database db = thirdNF.normalize(tableTransitives);
@@ -94,16 +94,16 @@ public class ThirdNFTest {
         assertFalse(result.isNormalized);
         assertNotNull(db);
         assertEquals(db.size(), 3);
-        assertTrue(db.containsTable("F1"));
-        assertTrue(db.containsTable("F2"));
-        assertTrue(db.containsTable("F3"));
-        Table tableF1 = db.getTable("F1");
+        assertTrue(db.containsTable("Catalog_F1"));
+        assertTrue(db.containsTable("Catalog_F2"));
+        assertTrue(db.containsTable("Catalog_F3"));
+        Table tableF1 = db.getTable("Catalog_F1");
         assertEquals(2, tableF1.columns());
         assertEquals(tableTransitives.rows(), tableF1.rows());
-        Table tableF2 = db.getTable("F2");
+        Table tableF2 = db.getTable("Catalog_F2");
         assertEquals(2, tableF2.columns());
         assertEquals(8, tableF2.rows());
-        Table tableF3 = db.getTable("F3");
+        Table tableF3 = db.getTable("Catalog_F3");
         assertEquals(2, tableF3.columns());
         assertEquals(4, tableF3.rows());
     }
@@ -111,7 +111,7 @@ public class ThirdNFTest {
     @Test
     void testIsNormalizedTableWithNoDependenciesReturnsTrue() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableNoDependencies);
         // Then
@@ -122,7 +122,7 @@ public class ThirdNFTest {
     @Test
     void testIsNormalizedTableWithDependenciesReturnsFalse() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableDependencies);
         // Then
@@ -133,7 +133,7 @@ public class ThirdNFTest {
     @Test
     void testIsNormalizedTableWithTransitiveDependenciesReturnsFalse() {
         // Given
-        Normalizer thirdNF = Normalizers.getThirdNF();
+        Normalizer thirdNF = NormalizerFactory.getThirdNF();
         // When
         NormalizerResult result = thirdNF.isNormalized(tableTransitives);
         // Then

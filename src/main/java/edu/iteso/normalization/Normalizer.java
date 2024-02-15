@@ -1,13 +1,19 @@
 package edu.iteso.normalization;
 
-import java.util.Set;
+public abstract class Normalizer {
 
-public interface Normalizer {
+    private DependencyCalculator dependencyCalculator = null;
 
-    Database normalize(Table table);
+    public void setDependencyCalculator(DependencyCalculator dependencyCalculator) {
+        if(dependencyCalculator != null) this.dependencyCalculator = dependencyCalculator;
+    }
 
-    //Database normalize(Dataset dataset);
+    public DependencyCalculator getDependencyCalculator() {
+        if(this.dependencyCalculator == null) this.dependencyCalculator = StandardDependencyCalculator.getInstance();
+        return this.dependencyCalculator;
+    }
 
-    NormalizerResult isNormalized(Table table);
-
+    public abstract Database normalize(Table table);
+    public abstract NormalizerResult isNormalized(Table table);
 }
+

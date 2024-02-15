@@ -35,7 +35,7 @@ public class SecondNF extends FirstNF {
                 for(String f: key) table.addField(f);
                 table.setPrimaryKey(key);
                 keysFound.add(key);
-                database.add(table);
+                database.add(table, false);
                 tableMap.put(key, table);
             }
             else for(String field: value) {
@@ -44,12 +44,23 @@ public class SecondNF extends FirstNF {
                     table.addField(field);
                 } else {
                     String title = key.toString();
-                    Table table = new Table(title);
+                    Table table = new Table("Catalog_" + title);
                     for(String f: key) table.addField(f);
                     table.setPrimaryKey(key);
                     table.addField(field);
                     keysFound.add(key);
-                    database.add(table);
+
+                    tag: for(Table t: database) {
+                        for(int c = 0; c < t.columns(); c ++) {
+                            String f = t.getFieldName(c);
+                            if(f.equals(title)) {
+                                t.addForeignKey(new Key(f), table.getName());
+                                break tag;
+                            }
+                        }
+                    }
+
+                    database.add(table, true);
                     tableMap.put(key, table);
                 }
             }
@@ -81,7 +92,7 @@ public class SecondNF extends FirstNF {
             int index = table.getFieldIndex(fieldInKey);
             for(int c = 0; c < table.columns(); c ++) {
                 if(index == c) continue;
-                if(NormalizeUtils.defines(index, c, table)) {
+                if(getDependencyCalculator().isDependent(table, index, c)) {
                     isNormalized = false;
                     errorList.add(String.format("Field %s is defined by one field in the key (%s)", table.getFieldName(c), fieldInKey));
                 }
@@ -102,5 +113,4 @@ public class SecondNF extends FirstNF {
             }
         }
     }
-
 }

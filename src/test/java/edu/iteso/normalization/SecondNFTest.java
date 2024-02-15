@@ -47,7 +47,7 @@ public class SecondNFTest {
     @Test
     void testNormalizeTableWithSingleKeyProducesInputTable() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tableSingleKey);
         Database db = secondNF.normalize(tableSingleKey);
@@ -63,7 +63,7 @@ public class SecondNFTest {
     @Test
     void testNormalizeTableAllFieldsDependOnAllKeysProducesInputTable() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tableTwoKeys);
         Database db = secondNF.normalize(tableTwoKeys);
@@ -79,7 +79,7 @@ public class SecondNFTest {
     @Test
     void testNormalizeTableWithPartialDependencies() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tablePartialDependencies);
         Database db = secondNF.normalize(tablePartialDependencies);
@@ -87,16 +87,16 @@ public class SecondNFTest {
         assertFalse(result.isNormalized);
         assertNotNull(db);
         assertEquals(db.size(), 3);
-        assertTrue(db.containsTable("F1, F2"));
-        assertTrue(db.containsTable("F1"));
-        assertTrue(db.containsTable("F2"));
-        Table tableF1F2 = db.getTable("F1, F2");
+        assertTrue(db.containsTable("Catalog_F1_F2"));
+        assertTrue(db.containsTable("Catalog_F1"));
+        assertTrue(db.containsTable("Catalog_F2"));
+        Table tableF1F2 = db.getTable("Catalog_F1_F2");
         assertEquals(3, tableF1F2.columns());
         assertEquals(tablePartialDependencies.rows(), tableF1F2.rows());
-        Table tableF1 = db.getTable("F1");
+        Table tableF1 = db.getTable("Catalog_F1");
         assertEquals(2, tableF1.columns());
         assertEquals(3, tableF1.rows());
-        Table tableF2 = db.getTable("F2");
+        Table tableF2 = db.getTable("Catalog_F2");
         assertEquals(3, tableF2.columns());
         assertEquals(5, tableF2.rows());
     }
@@ -104,7 +104,7 @@ public class SecondNFTest {
     @Test
     void testIsNormalizedTable2FNReturnsTrueAndEmptyAnomalyList() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tableSingleKey);
         // Then
@@ -115,7 +115,7 @@ public class SecondNFTest {
     @Test
     void testIsNormalizedTableIn2NFReturnsTrue() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tableTwoKeys);
         // Then
@@ -126,7 +126,7 @@ public class SecondNFTest {
     @Test
     void testIsNormalizedTableWithPartialDependenciesReturnsFalsee() {
         // Given
-        Normalizer secondNF = Normalizers.getSecondNF();
+        Normalizer secondNF = NormalizerFactory.getSecondNF();
         // When
         NormalizerResult result = secondNF.isNormalized(tablePartialDependencies);
         // Then

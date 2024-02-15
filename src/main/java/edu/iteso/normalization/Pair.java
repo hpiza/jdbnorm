@@ -1,6 +1,5 @@
 package edu.iteso.normalization;
 public class Pair<S, T> {
-
     private S first;
     private T second;
 
@@ -16,5 +15,4 @@ public class Pair<S, T> {
     public T getSecond() {
         return second;
     }
-
 }

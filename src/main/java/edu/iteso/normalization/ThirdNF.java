@@ -9,13 +9,12 @@ public class ThirdNF extends SecondNF {
 
     public Database normalize(Table inputTable) {
         if(isNormalized(inputTable).isNormalized) return new Database(inputTable);
-
         Database db2FN = super.normalize(inputTable);
         Database dbToReturn = new Database();
         for(Table tb2FN: db2FN) {
             Database db3FN = normalize1(tb2FN);
             if(db3FN.size() == 1) {
-                dbToReturn.add(tb2FN);
+                dbToReturn.add(tb2FN, false);
             } else {
                 for (Table tb3FN : db3FN) {
                     Database db = normalize(tb3FN);
@@ -28,7 +27,7 @@ public class ThirdNF extends SecondNF {
 
     public Database normalize1(Table inputTable) {
         if(isNormalized(inputTable).isNormalized) return new Database(inputTable);
-        Database db2FN = Normalizers.getSecondNF().normalize(inputTable);
+        Database db2FN = NormalizerFactory.getSecondNF().normalize(inputTable);
         Database db3FN = new Database();
         for(Table table2FN: db2FN) {
             Key pk = table2FN.getPrimaryKey();
@@ -38,8 +37,8 @@ public class ThirdNF extends SecondNF {
                 if(pk.contains(table2FN.getFieldName(f))) continue;
                 for(int g = f + 1; g < table2FN.columns(); g ++) {
                     if(pk.contains(table2FN.getFieldName(g))) continue;
-                    boolean fg = NormalizeUtils.defines(f, g, table2FN);
-                    boolean gf = NormalizeUtils.defines(g, f, table2FN);
+                    boolean fg = getDependencyCalculator().isDependent(table2FN, f, g);
+                    boolean gf = getDependencyCalculator().isDependent(table2FN, g, f);
                     if(fg == gf) continue;
 
                     foundDependency = true;
@@ -52,10 +51,9 @@ public class ThirdNF extends SecondNF {
                     String keyField = table2FN.getFieldName(key);
                     String notKeyField = table2FN.getFieldName(notKey);
                     Key newKey = new Key(keyField);
-
                     Table table3FN = db3FN.findTableByKey(newKey);
                     if(table3FN == null) {
-                        table3FN = new Table("" + keyField);
+                        table3FN = new Table("Catalog_" + keyField);
                         table3FN.addField(keyField);
                         table3FN.addField(notKeyField);
                         table3FN.setPrimaryKey(newKey);
@@ -65,7 +63,8 @@ public class ThirdNF extends SecondNF {
                             row1.add(row.get(notKey));
                             table3FN.addRow(row1);
                         }
-                        db3FN.add(table3FN);
+                        table2FN.addForeignKey(newKey, table3FN.getName());
+                        db3FN.add(table3FN, true);
                     } else {
                         table3FN.addField(notKeyField);
                         Map<String, String> keyToNotKey = new HashMap<>();
@@ -100,10 +99,14 @@ public class ThirdNF extends SecondNF {
                     }
                     table3FN.addRow(row1);
                 }
-                db3FN.add(table3FN);
+                for(Key fkey: table2FN.getForeignKeys()) {
+                    int f = table2FN.getFieldIndex(fkey.toString());
+                    if(!removeField[f]) table3FN.addForeignKey(fkey, table2FN.getForeignTableName(fkey));
+                }
+                db3FN.add(table3FN, false);
                 table3FN.setPrimaryKey(table2FN.getPrimaryKey());
             } else {
-                db3FN.add(table2FN);
+                db3FN.add(table2FN, false);
             }
         }
         return db3FN;
@@ -123,7 +126,7 @@ public class ThirdNF extends SecondNF {
                 if(col1 == col2) continue;
                 String field2 = table.getFieldName(col2);
                 if(table.getPrimaryKey().contains(field2)) continue;
-                if(NormalizeUtils.defines(col1, col2, table)) {
+                if(getDependencyCalculator().isDependent(table, col1, col2)) {
                     isNormalized = false;
                     errorList.add(String.format("Field %s is defined by non-key field %s", field2, field1));
                 }
@@ -131,5 +134,4 @@ public class ThirdNF extends SecondNF {
         }
         return new NormalizerResult(isNormalized, errorList);
     }
-
 }

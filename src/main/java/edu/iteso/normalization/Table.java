@@ -1,5 +1,7 @@
 package edu.iteso.normalization;
 
+import edu.iteso.database.Datatype;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,6 +25,8 @@ public class Table implements Iterable<Row> {
     private Key primaryKey;
     private Map<Key, List<String>> dependencies;
 
+    private Map<Key, String> foreignKeys;
+
     public Table(String name) {
         this.name = name;
         this.header = new ArrayList<>();
@@ -33,6 +37,7 @@ public class Table implements Iterable<Row> {
         this.primaryKey = Key.emptyKey();
         this.dependencies = new HashMap<>();
         this.hashCode = this.name.hashCode();
+        this.foreignKeys = new HashMap<>();
     }
 
     public int hashCode() {
@@ -135,30 +140,6 @@ public class Table implements Iterable<Row> {
         return s;
     }
 
-    public static Table fromDataset(Dataset dataset) {
-        Table table = new Table(dataset.getName());
-        int untitledColumnsCount = 0;
-        for(int f = 0, a = 1; f < dataset.fields(); f ++) {
-            String field = dataset.getField(f);
-            if(field.equals("")) {
-                field = "UNTITLED_" + (a ++);
-                table.addField(field, true);
-                untitledColumnsCount ++;
-            } else table.addField(field, false);
-        }
-        int maxColumns = dataset.fields();
-        for(String[] stringRow: dataset) {
-            Row row = new Row(stringRow);
-            if(row.size() > maxColumns) maxColumns = row.size();
-            table.addRow(row);
-        }
-        int colsToAdd = maxColumns - table.columns();
-        for(int c = 0; c < colsToAdd; c ++) {
-            table.addField("UNTITLED_" + (++ untitledColumnsCount), true);
-        }
-        return table;
-    }
-
     public static Table fromFile(String filename) throws IOException {
         File f = new File(filename);
         int extensionIndex = f.getName().toLowerCase().indexOf(".csv", 0);
@@ -182,20 +163,6 @@ public class Table implements Iterable<Row> {
                 untitledColumnsCount ++;
             } else table.addField(cellsArray[i], false);
         }
-
-        // Revisar presencia de nombres de columnas repetidas
-        /*
-        String repeatedTitles = "";
-        for(int i = 0; i < cellsArray.length; i ++) {
-            if(cellsArray[i].equals("?")) continue;
-            for(int j = i + 1; j < cellsArray.length; j ++) {
-                if(cellsArray[i].equals(cellsArray[j])) {
-                    if(!repeatedTitles.equals("")) repeatedTitles += ", ";
-                    repeatedTitles += cellsArray[i];
-                    break;
-                }
-            }
-        }*/
 
         // Guardar el numero de columnas que tiene la fila de titulos
         // maxColumns guardara al final el numero de columnas de la fila que tiene mas columnas
@@ -224,4 +191,65 @@ public class Table implements Iterable<Row> {
         return table;
     }
 
+    public void addForeignKey(Key key, String tableName) {
+        this.foreignKeys.put(key, tableName);
+    }
+
+    public Set<Key> getForeignKeys() {
+        return this.foreignKeys.keySet();
+    }
+
+    public String getForeignTableName(Key key) {
+        return this.foreignKeys.get(key);
+    }
+
+    private Datatype datatypes[];
+    private int sizes[];
+
+    public Datatype getFieldDatatype(int fieldIndex) {
+        if(datatypes == null) throw new RuntimeException("First call method discoverDatatypes()");
+        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
+        return this.datatypes[fieldIndex];
+    }
+
+    public int getFieldSize(int fieldIndex) {
+        if(sizes == null) throw new RuntimeException("First call method discoverDatatypes()");
+        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
+        return this.sizes[fieldIndex];
+    }
+
+    public void discoverDatatypes() {
+        this.datatypes = new Datatype[columns()];
+        this.sizes = new int[columns()];
+        for(int c = 0; c < columns(); c ++) {
+            boolean isInt = true, isReal = true;
+            int maxLength = 0;
+            for(int r = 0; r < rows(); r ++) {
+                String value = getRow(r).get(c);
+                maxLength = Math.max(maxLength, value.length());
+                if(!isReal) continue;
+                try {
+                    Double.parseDouble(value);
+                } catch(Exception ex) {
+                    isReal = false;
+                }
+                if(!isInt) continue;
+                try {
+                    Integer.parseInt(value);
+                } catch(Exception ex) {
+                    isInt = false;
+                }
+            }
+            if(isInt) {
+                datatypes[c] = Datatype.Integer;
+                sizes[c] = 1;
+            } else if(isReal) {
+                datatypes[c] = Datatype.Real;
+                sizes[c] = 1;
+            } else {
+                datatypes[c] = Datatype.Text;
+                sizes[c] = maxLength % 5 == 0? maxLength: maxLength + 5 - maxLength % 5;
+            }
+        }
+    }
 }

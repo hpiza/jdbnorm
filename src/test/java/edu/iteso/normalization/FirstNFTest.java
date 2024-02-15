@@ -52,7 +52,7 @@ public class FirstNFTest {
     @Test
     void testNormalizeTableIn1FNProducesInputTable() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         Database db = firstNF.normalize(table1FN);
         Iterator<Table> iterator = db.iterator();
@@ -67,7 +67,7 @@ public class FirstNFTest {
     @Test
     void testNormalizeFindsPrimaryKey() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         Database db = firstNF.normalize(tableNoKey);
         Iterator<Table> iterator = db.iterator();
@@ -84,7 +84,7 @@ public class FirstNFTest {
     @Test
     void testNormalizeFindsPrimaryKeyInTableWithMultivalued() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         Database db = firstNF.normalize(mvfTable);
         Iterator<Table> iterator = db.iterator();
@@ -100,7 +100,7 @@ public class FirstNFTest {
     @Test
     void testNormalizeTableWithMultivaluedContainsLessColumnsAndMoreRows() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         Database db = firstNF.normalize(mvfTable);
         Iterator<Table> iterator = db.iterator();
@@ -114,7 +114,7 @@ public class FirstNFTest {
     @Test
     void testIsNormalizedTable1FNReturnsTrueAndEmptyAnomalyList() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         NormalizerResult result = firstNF.isNormalized(table1FN);
         // Then
@@ -125,7 +125,7 @@ public class FirstNFTest {
     @Test
     void testIsNormalizedTableNoKeyReturnsFalse() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         NormalizerResult result = firstNF.isNormalized(tableNoKey);
         // Then
@@ -137,7 +137,7 @@ public class FirstNFTest {
     @Test
     void testIsNormalizedTableWithMultivaluedAnomalyListContainsThreeErrors() {
         // Given
-        Normalizer firstNF = Normalizers.getFirstNF();
+        Normalizer firstNF = NormalizerFactory.getFirstNF();
         // When
         NormalizerResult result = firstNF.isNormalized(mvfTable);
         // Then
@@ -147,5 +147,4 @@ public class FirstNFTest {
         assertTrue(result.anomalyList.contains("Field 3 is empty"));
         assertTrue(result.anomalyList.contains("Primary key is not defined"));
     }
-
 }

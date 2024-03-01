@@ -1,47 +1,48 @@
 package edu.iteso.database;
 
-import edu.iteso.normalization.Database;
+import edu.iteso.normalization.Key;
 import edu.iteso.normalization.Row;
 import edu.iteso.normalization.Table;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+public class MongoScript extends DbScript {
 
-public class MongoScript implements DbScript {
-
-    public void createDatabase(Database database, String name) {
-        try {
-            FileWriter fw = new FileWriter(name + ".mongo");
-            BufferedWriter bw = new BufferedWriter(fw);
-            for (Table table: database) {
-                bw.append(String.format("db.createCollection(%s)", table.getName()));
-                bw.newLine();
-            }
-            bw.newLine();
-            for (Table table: database) {
-                populateCollection(bw, table);
-                bw.newLine();
-            }
-            bw.close();
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+    @Override
+    public String createDatabase(String dbName) {
+        return String.format("db.createCollection(%s)", dbName);
     }
 
-    private void populateCollection(BufferedWriter bw, Table table) throws IOException {
-        bw.append(String.format("db.%s.insert([", table.getName()));
-        bw.newLine();
-        for(Row row: table) {
-            String document = "";
-            for(int i = 0; i < row.size(); i ++) {
-                document += String.format("\"%s\": \"%s\"", table.getFieldName(i), row.get(i));
-                if(i < row.size() - 1) document += ", ";
-            }
-            bw.append(String.format("{%s}", document));
-            bw.newLine();
+    @Override
+    public String createTable(String name, String field0, Datatype datatype0, int size0) {
+        return "";
+    }
+
+    @Override
+    public boolean fieldsAreDeclared() {
+        return false;
+    }
+
+    @Override
+    public String insertData(Table table, Row row, boolean[] textTypeFields) {
+        StringBuilder str = new StringBuilder(String.format("db.%s.insertOne({", table.getName()));
+        for(int i = 0; i < row.size(); i ++) {
+            str.append(String.format("\"%s\": \"%s\"", table.getFieldName(i), row.get(i)));
+            if(i < row.size() - 1) str.append(", ");
         }
-        bw.append("])");
-        bw.newLine();
+        return str + "})";
+    }
+
+    @Override
+    public String addPrimaryKey(String tableName, Key primaryKey) {
+        return "";
+    }
+
+    @Override
+    public String addFields(String tableName, String fieldName, Datatype datatype, int fieldSize) {
+        return "";
+    }
+
+    @Override
+    public String addForeignKey(String tableName, Key foreignKey, String foreignTableName) {
+        return "";
     }
 }

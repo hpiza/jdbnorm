@@ -30,7 +30,7 @@ public class SecondNF extends FirstNF {
             Key key = d.getKey();
             List<String> value = d.getValue();
             if(value.isEmpty()) {
-                String title = key.toString();
+                String title = key.toString().replace(", ", "_");
                 Table table = new Table(title);
                 for(String f: key) table.addField(f);
                 table.setPrimaryKey(key);
@@ -43,7 +43,7 @@ public class SecondNF extends FirstNF {
                     Table table = tableMap.get(key);
                     table.addField(field);
                 } else {
-                    String title = key.toString();
+                    String title = key.toString().replace(", ", "_");
                     Table table = new Table("Catalog_" + title);
                     for(String f: key) table.addField(f);
                     table.setPrimaryKey(key);

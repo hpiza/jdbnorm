@@ -2,17 +2,10 @@ package edu.iteso.normalization;
 
 import edu.iteso.database.Datatype;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class Table implements Iterable<Row> {
     private final String name;
@@ -20,12 +13,12 @@ public class Table implements Iterable<Row> {
     private final Map<String, Integer> fieldIndex;
     private final List<Boolean> untitledFields;
     private final int hashCode;
-    private Set<Row> data;
-    private Map<Integer, Row> rowIndex;
+    private final Set<Row> data;
+    private final Map<Integer, Row> rowIndex;
     private Key primaryKey;
-    private Map<Key, List<String>> dependencies;
+    private final Map<Key, List<String>> dependencies;
 
-    private Map<Key, String> foreignKeys;
+    private final Map<Key, String> foreignKeys;
 
     public Table(String name) {
         this.name = name;
@@ -45,8 +38,7 @@ public class Table implements Iterable<Row> {
     }
 
     public boolean equals(Object o) {
-        if(o instanceof Table) {
-            Table t = (Table) o;
+        if(o instanceof Table t) {
             return this.name.equals(t.getName());
         }
         return false;
@@ -135,14 +127,76 @@ public class Table implements Iterable<Row> {
 
     public String toString() {
         String pk = this.getPrimaryKey() == Key.emptyKey()? "None" : this.getPrimaryKey().toString();
-        String s = String.format("{table-name=%s, primary-key=%s, fields=%s, dependencies=%s}\n", this.name, pk, this.header, this.dependencies);
-        for(Row r: data) s += r + "\n";
-        return s;
+        StringBuilder s = Optional.ofNullable(String.format("{table-name=%s, primary-key=%s, fields=%s, dependencies=%s}\n", this.name, pk, this.header, this.dependencies)).map(StringBuilder::new).orElse(null);
+        for(Row r: data) s = (s == null ? new StringBuilder("null") : s).append(r).append("\n");
+        return s == null ? null : s.toString();
+    }
+
+    public void addForeignKey(Key key, String tableName) {
+        this.foreignKeys.put(key, tableName);
+    }
+
+    public Set<Key> getForeignKeys() {
+        return this.foreignKeys.keySet();
+    }
+
+    public String getForeignTableName(Key key) {
+        return this.foreignKeys.get(key);
+    }
+
+    private Datatype[] datatypes;
+    private int[] sizes;
+
+    public Datatype getFieldDatatype(int fieldIndex) {
+        if(datatypes == null) throw new RuntimeException("First call method discoverDatatypes()");
+        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
+        return this.datatypes[fieldIndex];
+    }
+
+    public int getFieldSize(int fieldIndex) {
+        if(sizes == null) throw new RuntimeException("First call method discoverDatatypes()");
+        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
+        return this.sizes[fieldIndex];
+    }
+
+    public void discoverDatatypes() {
+        this.datatypes = new Datatype[columns()];
+        this.sizes = new int[columns()];
+        for(int c = 0; c < columns(); c ++) {
+            boolean isInt = true, isReal = true;
+            int maxLength = 0;
+            for(int r = 0; r < rows(); r ++) {
+                String value = getRow(r).get(c);
+                maxLength = Math.max(maxLength, value.length());
+                if(!isReal) continue;
+                try {
+                    Double.parseDouble(value);
+                } catch(Exception ex) {
+                    isReal = false;
+                }
+                if(!isInt) continue;
+                try {
+                    Integer.parseInt(value);
+                } catch(Exception ex) {
+                    isInt = false;
+                }
+            }
+            if(isInt) {
+                datatypes[c] = Datatype.Integer;
+                sizes[c] = 1;
+            } else if(isReal) {
+                datatypes[c] = Datatype.Real;
+                sizes[c] = 1;
+            } else {
+                datatypes[c] = Datatype.Text;
+                sizes[c] = maxLength % 5 == 0? maxLength: maxLength + 5 - maxLength % 5;
+            }
+        }
     }
 
     public static Table fromFile(String filename) throws IOException {
         File f = new File(filename);
-        int extensionIndex = f.getName().toLowerCase().indexOf(".csv", 0);
+        int extensionIndex = f.getName().toLowerCase().indexOf(".csv");
         String tableName = f.getName().substring(0, extensionIndex);
         Table table = new Table(tableName);
         BufferedReader br = new BufferedReader(new FileReader(f));
@@ -191,65 +245,27 @@ public class Table implements Iterable<Row> {
         return table;
     }
 
-    public void addForeignKey(Key key, String tableName) {
-        this.foreignKeys.put(key, tableName);
-    }
-
-    public Set<Key> getForeignKeys() {
-        return this.foreignKeys.keySet();
-    }
-
-    public String getForeignTableName(Key key) {
-        return this.foreignKeys.get(key);
-    }
-
-    private Datatype datatypes[];
-    private int sizes[];
-
-    public Datatype getFieldDatatype(int fieldIndex) {
-        if(datatypes == null) throw new RuntimeException("First call method discoverDatatypes()");
-        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
-        return this.datatypes[fieldIndex];
-    }
-
-    public int getFieldSize(int fieldIndex) {
-        if(sizes == null) throw new RuntimeException("First call method discoverDatatypes()");
-        if(fieldIndex < 0 || fieldIndex >= this.datatypes.length) throw new IllegalArgumentException("Field index is not valid: " + fieldIndex);
-        return this.sizes[fieldIndex];
-    }
-
-    public void discoverDatatypes() {
-        this.datatypes = new Datatype[columns()];
-        this.sizes = new int[columns()];
-        for(int c = 0; c < columns(); c ++) {
-            boolean isInt = true, isReal = true;
-            int maxLength = 0;
-            for(int r = 0; r < rows(); r ++) {
-                String value = getRow(r).get(c);
-                maxLength = Math.max(maxLength, value.length());
-                if(!isReal) continue;
-                try {
-                    Double.parseDouble(value);
-                } catch(Exception ex) {
-                    isReal = false;
-                }
-                if(!isInt) continue;
-                try {
-                    Integer.parseInt(value);
-                } catch(Exception ex) {
-                    isInt = false;
-                }
-            }
-            if(isInt) {
-                datatypes[c] = Datatype.Integer;
-                sizes[c] = 1;
-            } else if(isReal) {
-                datatypes[c] = Datatype.Real;
-                sizes[c] = 1;
-            } else {
-                datatypes[c] = Datatype.Text;
-                sizes[c] = maxLength % 5 == 0? maxLength: maxLength + 5 - maxLength % 5;
-            }
+    public static void toCsvFile(Path dirPath, Table table) throws IOException {
+        Path filePath = Paths.get(dirPath.toString(), table.getName() + ".csv");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(filePath.toFile()));
+        StringBuilder strBuilder = new StringBuilder();
+        for(int i = 0; i < table.columns(); i ++) {
+            strBuilder.append(table.getFieldName(i));
+            if(i < table.columns() - 1) strBuilder.append(",");
         }
+        String str = strBuilder.toString();
+        bw.append(str);
+        bw.newLine();
+        for(Row row: table) {
+            StringBuilder strBuilder1 = new StringBuilder();
+            for(int i = 0; i < row.size(); i ++) {
+                strBuilder1.append(row.get(i));
+                if(i < row.size() - 1) strBuilder1.append(",");
+            }
+            str = strBuilder1.toString();
+            bw.append(str);
+            bw.newLine();
+        }
+        bw.close();
     }
 }

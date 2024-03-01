@@ -1,9 +1,12 @@
 package edu.iteso.normalization;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Database implements Iterable<Table> {
-
     private final Map<String, Table> nameTableMap = new HashMap<>();
 
     private final List<Table> tableList = new LinkedList<>();
@@ -56,6 +59,15 @@ public class Database implements Iterable<Table> {
         StringBuilder sb = new StringBuilder();
         for(Table t: this.nameTableMap.values()) sb.append(t.toString());
         return sb.toString();
+    }
+
+    public static void toCsvFiles(Database database, String folderName) {
+        try {
+            Path path = Files.createDirectory(Paths.get(folderName));
+            for(Table table: database) Table.toCsvFile(path, table);
+        } catch(IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

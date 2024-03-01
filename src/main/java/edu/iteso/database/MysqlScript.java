@@ -1,79 +1,59 @@
 package edu.iteso.database;
 
-import edu.iteso.normalization.Database;
 import edu.iteso.normalization.Key;
 import edu.iteso.normalization.Row;
 import edu.iteso.normalization.Table;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+public class MysqlScript extends DbScript {
 
-public class MysqlScript implements DbScript {
+    public String createDatabase(String dbName) {
+        return String.format("DROP DATABASE IF EXISTS %s;\nCREATE DATABASE %s;\nUSE %s;", dbName, dbName, dbName);
+    }
+
+    public String createTable(String name, String field0, Datatype datatype0, int size0) {
+        String type = switch (datatype0) {
+            case Integer -> "INTEGER";
+            case Real -> "DECIMAL";
+            default -> String.format("VARCHAR(%d)", size0);
+        };
+        return String.format("CREATE TABLE %s(%s %s);", name, field0, type);
+    }
 
     @Override
-    public void createDatabase(Database db, String name) {
-        try {
-            FileWriter fw = new FileWriter(name + ".script");
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.append(String.format("CREATE DATABASE IF NOT EXISTS %s;", name));
-            bw.newLine();
-            bw.append(String.format("USE %s;", name));
-            bw.newLine();
-            bw.newLine();
-            for (Table table : db) createTable(table, bw);
-            bw.newLine();
-            for (Table table : db) {
-                populateTable(table, bw);
-                bw.newLine();
-            }
-            bw.close();
-        } catch(IOException ex) {
-        }
+    public boolean fieldsAreDeclared() {
+        return true;
     }
 
-    private void createTable(Table table, BufferedWriter bw) throws IOException {
-        table.discoverDatatypes();
-        bw.append(String.format("CREATE TABLE IF NOT EXISTS %s(", table.getName()));
-        for (int i = 0; i < table.columns(); i++) {
-            String field = table.getFieldName(i);
-            switch(table.getFieldDatatype(i)) {
-                case Integer: bw.append(String.format("%s INTEGER, ", field)); break;
-                case Real: bw.append(String.format("%s DECIMAL, ", field)); break;
-                default: bw.append(String.format("%s VARCHAR(%d), ", field, table.getFieldSize(i)));
-            }
-        }
-        String primaryKey = "PRIMARY KEY(";
-        for(String field: table.getPrimaryKey()) primaryKey += field + ", ";
-        primaryKey = primaryKey.substring(0, primaryKey.length() - 2) + ")";
-        bw.append(primaryKey);
-        for(Key foreignKey: table.getForeignKeys()) {
-            String tableName = table.getForeignTableName(foreignKey);
-            bw.append(String.format(", FOREIGN KEY (%s)", foreignKey.toString()));
-            bw.append(String.format(" REFERENCES %s(%s)", tableName, foreignKey.toString()));
-        }
-        bw.append(");");
-        bw.newLine();
+    @Override
+    public String addPrimaryKey(String tableName, Key primaryKey) {
+        return String.format("ALTER TABLE %s ADD PRIMARY KEY(%s);", tableName, primaryKey.toString());
     }
 
-    private void populateTable(Table table, BufferedWriter bw) throws IOException {
-        String fields = "";
-        for (int i = 0; i < table.columns(); i++) {
-            String field = table.getFieldName(i);
-            fields += field + ", ";
+    @Override
+    public String addFields(String tableName, String fieldName, Datatype datatype, int fieldSize) {
+        String typeName = switch (datatype) {
+            case Integer -> "INTEGER";
+            case Real -> "DECIMAL";
+            default -> String.format("VARCHAR(%d)", fieldSize);
+        };
+        return String.format("ALTER TABLE %s ADD COLUMN %s %s;", tableName, fieldName, typeName);
+    }
+
+    @Override
+    public String addForeignKey(String tableName, Key foreignKey, String foreignTableName) {
+        return String.format("ALTER TABLE %s ADD FOREIGN KEY(%s) REFERENCES %s(%s);", tableName, foreignKey, foreignTableName, foreignKey);
+    }
+
+    @Override
+    public String insertData(Table table, Row row, boolean[] textTypeFields) {
+        StringBuilder valuesBuilder = new StringBuilder();
+        for(int i = 0; i < row.size(); i ++) {
+            String value = row.get(i);
+            if(textTypeFields[i]) valuesBuilder.append(String.format("\"%s\", ", value));
+            else valuesBuilder.append(String.format("%s, ", value));
         }
-        fields = fields.substring(0, fields.length() - 2);
-        for(Row row: table) {
-            bw.append(String.format("INSERT INTO %s(%s) VALUES(", table.getName(), fields));
-            String values = "";
-            for(int i = 0; i < row.size(); i ++) {
-                String value = row.get(i);
-                if(table.getFieldDatatype(i) == Datatype.Text) values += String.format("\"%s\", ", value);
-                else values += String.format("%s, ", value);
-            }
-            values = values.substring(0, values.length() - 2) + ");";
-            bw.append(values);
-            bw.newLine();
-        }
+        String values = valuesBuilder.toString();
+        values = values.substring(0, values.length() - 2);
+        return String.format("INSERT INTO %s VALUES(%s);", table.getName(), values);
     }
 }

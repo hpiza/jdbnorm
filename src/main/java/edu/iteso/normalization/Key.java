@@ -31,7 +31,7 @@ public class Key implements Iterable<String> {
     public Key(Set<String> fields) {
         this.fields = new HashSet<>(fields);
         this.hashCode = this.fields.hashCode();
-        String str = this.fields.toString().replace(", ", "_");
+        String str = this.fields.toString();
         this.toString = str.substring(1, str.length() - 1);
     }
 
@@ -45,12 +45,10 @@ public class Key implements Iterable<String> {
         return new Key(fields);
     }
     public boolean contains(String value) {
-
         return this.fields.contains(value);
     }
     public boolean equals(Object o) {
-        if(!(o instanceof Key)) return false;
-        Key key = (Key) o;
+        if(!(o instanceof Key key)) return false;
         return this.fields.equals(key.fields);
     }
     public int hashCode() {

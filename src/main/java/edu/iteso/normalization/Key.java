@@ -31,8 +31,7 @@ public class Key implements Iterable<String> {
     public Key(Set<String> fields) {
         this.fields = new HashSet<>(fields);
         this.hashCode = this.fields.hashCode();
-        String str = this.fields.toString();
-        this.toString = str.substring(1, str.length() - 1);
+        this.toString = this.fields.toString().replace('[', '<').replace(']', '>');
     }
 
     public Key(String... fields) {

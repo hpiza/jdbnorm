@@ -30,7 +30,11 @@ public class SecondNF extends FirstNF {
             Key key = d.getKey();
             List<String> value = d.getValue();
             if(value.isEmpty()) {
-                String title = key.toString().replace(", ", "_");
+                String title = key.toString();
+                if(title.startsWith("<")) {
+                    int last = key.toString().length() - 1;
+                    title = key.toString().substring(1, last).replace(", ", "_");
+                }
                 Table table = new Table(title);
                 for(String f: key) table.addField(f);
                 table.setPrimaryKey(key);
@@ -43,8 +47,16 @@ public class SecondNF extends FirstNF {
                     Table table = tableMap.get(key);
                     table.addField(field);
                 } else {
-                    String title = key.toString().replace(", ", "_");
-                    Table table = new Table("Catalog_" + title);
+                    String keyName = key.toString();
+                    String title;
+                    if(key.size() == 1) {
+                        title = "Catalog_" + keyName;
+                    } else {
+                        int last = keyName.length() - 1;
+                        char c = Character.toUpperCase(keyName.charAt(1));
+                        title = c + keyName.substring(2, last).replace(", ", "_");
+                    }
+                    Table table = new Table(title);
                     for(String f: key) table.addField(f);
                     table.setPrimaryKey(key);
                     table.addField(field);
@@ -92,7 +104,7 @@ public class SecondNF extends FirstNF {
             int index = table.getFieldIndex(fieldInKey);
             for(int c = 0; c < table.columns(); c ++) {
                 if(index == c) continue;
-                if(getDependencyCalculator().isDependent(table, index, c)) {
+                if(getDependencyCalculator().isDependent(table, index, c) > 0) {
                     isNormalized = false;
                     errorList.add(String.format("Field %s is defined by one field in the key (%s)", table.getFieldName(c), fieldInKey));
                 }
@@ -104,6 +116,7 @@ public class SecondNF extends FirstNF {
     private static void addDependency(Key rootKey, String field, Map<Key, List<String>> dependencies, Map<Key, List<String>> dependenciesToPK) {
         List<String> list = dependenciesToPK.get(rootKey);
         if(list == null) list = new ArrayList<>();
+        else if(list.contains(field)) return;
         list.add(field);
         dependenciesToPK.put(rootKey, list);
         for(Map.Entry<Key, List<String>> d: dependencies.entrySet()) {

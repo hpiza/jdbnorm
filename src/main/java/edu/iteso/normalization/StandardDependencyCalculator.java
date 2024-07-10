@@ -16,8 +16,8 @@ public class StandardDependencyCalculator implements DependencyCalculator {
     }
 
     @Override
-    public boolean isDependent(Table table, int key, int notKey) {
-        if(key >= table.columns() || notKey >= table.columns()) return false;
+    public int isDependent(Table table, int key, int notKey) {
+        if(key >= table.columns() || notKey >= table.columns()) return 0;
         HashMap<String, String> valueMap = new HashMap<>();
         for(Row row: table) {
             String keyValue = row.get(key);
@@ -25,17 +25,17 @@ public class StandardDependencyCalculator implements DependencyCalculator {
             if (valueMap.containsKey(keyValue)) {
                 String nkv = valueMap.get(keyValue);
                 if (!notKeyValue.equals(nkv))
-                    return false;
+                    return 0;
             } else {
                 valueMap.put(keyValue, notKeyValue);
             }
         }
-        return true;
+        return valueMap.size();
     }
 
     @Override
-    public boolean isDependent(Table table, Set<Integer> compositeKey, int notKey) {
-        if(notKey >= table.columns()) return false;
+    public int isDependent(Table table, Set<Integer> compositeKey, int notKey) {
+        if(notKey >= table.columns()) return 0;
         HashMap<String, String> valueMap = new HashMap<>();
         for (Row row : table) {
             String keyValues = "";
@@ -44,11 +44,11 @@ public class StandardDependencyCalculator implements DependencyCalculator {
             if (valueMap.containsKey(keyValues)) {
                 String v2 = valueMap.get(keyValues);
                 if (!notKeyValue.equals(v2))
-                    return false;
+                    return 0;
             } else {
                 valueMap.put(keyValues, notKeyValue);
             }
         }
-        return true;
+        return valueMap.size();
     }
 }

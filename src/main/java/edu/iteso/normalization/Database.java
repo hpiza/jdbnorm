@@ -63,8 +63,9 @@ public class Database implements Iterable<Table> {
 
     public static void toCsvFiles(Database database, String folderName) {
         try {
-            Path path = Files.createDirectory(Paths.get(folderName));
-            for(Table table: database) Table.toCsvFile(path, table);
+            Path folderPath = Paths.get(folderName);
+            if(!Files.exists(folderPath)) Files.createDirectory(folderPath);
+            for(Table table: database) Table.toCsvFile(folderPath, table);
         } catch(IOException ex) {
             throw new RuntimeException(ex);
         }

@@ -37,15 +37,14 @@ public class ThirdNF extends SecondNF {
                 if(pk.contains(table2FN.getFieldName(f))) continue;
                 for(int g = f + 1; g < table2FN.columns(); g ++) {
                     if(pk.contains(table2FN.getFieldName(g))) continue;
-                    boolean fg = getDependencyCalculator().isDependent(table2FN, f, g);
-                    boolean gf = getDependencyCalculator().isDependent(table2FN, g, f);
+                    boolean fg = getDependencyCalculator().isDependent(table2FN, f, g) > 0;
+                    boolean gf = getDependencyCalculator().isDependent(table2FN, g, f) > 0;
                     if(fg == gf) continue;
 
                     foundDependency = true;
                     int key    = fg? f: g;
                     int notKey = fg? g: f;
                     removeField[notKey] = true;
-
 //				Crear la tabla que registre la dependencia encontrada a una no-clave
 //				O en su caso, obtener la tabla (ya creada) y añadir la nueva dependencia a la no-clave
                     String keyField = table2FN.getFieldName(key);
@@ -126,7 +125,7 @@ public class ThirdNF extends SecondNF {
                 if(col1 == col2) continue;
                 String field2 = table.getFieldName(col2);
                 if(table.getPrimaryKey().contains(field2)) continue;
-                if(getDependencyCalculator().isDependent(table, col1, col2)) {
+                if(getDependencyCalculator().isDependent(table, col1, col2) > 0) {
                     isNormalized = false;
                     errorList.add(String.format("Field %s is defined by non-key field %s", field2, field1));
                 }

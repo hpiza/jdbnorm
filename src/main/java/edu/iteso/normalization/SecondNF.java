@@ -104,7 +104,7 @@ public class SecondNF extends FirstNF {
             int index = table.getFieldIndex(fieldInKey);
             for(int c = 0; c < table.columns(); c ++) {
                 if(index == c) continue;
-                if(getDependencyCalculator().isDependent(table, index, c) > 0) {
+                if(getDependencyCalculator().isDependent(table, index, c)) {
                     isNormalized = false;
                     errorList.add(String.format("Field %s is defined by one field in the key (%s)", table.getFieldName(c), fieldInKey));
                 }

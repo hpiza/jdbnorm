@@ -36,9 +36,9 @@ public class StandardDependencyCalculatorTest {
         // Given
         StandardDependencyCalculator sdc = StandardDependencyCalculator.getInstance();
         // When
-        boolean isDependent01 = sdc.isDependent(table1, 0, 1) > 0;
-        boolean isDependent02 = sdc.isDependent(table1, 0, 2) > 0;
-        boolean isDependent03 = sdc.isDependent(table1, 1, 2) > 0;
+        boolean isDependent01 = sdc.isDependent(table1, 0, 1);
+        boolean isDependent02 = sdc.isDependent(table1, 0, 2);
+        boolean isDependent03 = sdc.isDependent(table1, 1, 2);
         // Then
         assertTrue(isDependent01);
         assertTrue(isDependent02);
@@ -50,9 +50,9 @@ public class StandardDependencyCalculatorTest {
         // Given
         StandardDependencyCalculator sdc = StandardDependencyCalculator.getInstance();
         // When
-        boolean isDependent01 = sdc.isDependent(table1, 1, 0) > 0;
-        boolean isDependent02 = sdc.isDependent(table1, 2, 0) > 0;
-        boolean isDependent03 = sdc.isDependent(table1, 2, 1) > 0;
+        boolean isDependent01 = sdc.isDependent(table1, 1, 0);
+        boolean isDependent02 = sdc.isDependent(table1, 2, 0);
+        boolean isDependent03 = sdc.isDependent(table1, 2, 1);
         // Then
         assertFalse(isDependent01);
         assertFalse(isDependent02);
@@ -64,9 +64,9 @@ public class StandardDependencyCalculatorTest {
         // Given
         StandardDependencyCalculator sdc = StandardDependencyCalculator.getInstance();
         // When
-        boolean isDependent012 = sdc.isDependent(table2, Set.of(0, 1), 2) > 0;
-        boolean isDependent01 = sdc.isDependent(table2, 0, 1) > 0;
-        boolean isDependent02 = sdc.isDependent(table2, 0, 2) > 0;
+        boolean isDependent012 = sdc.isDependent(table2, Set.of(0, 1), 2);
+        boolean isDependent01 = sdc.isDependent(table2, 0, 1);
+        boolean isDependent02 = sdc.isDependent(table2, 0, 2);
         // Then
         assertTrue(isDependent012);
         assertFalse(isDependent01);

@@ -129,7 +129,7 @@ public class Table implements Iterable<Row> {
         String pk = this.getPrimaryKey() == Key.emptyKey()? "None" : this.getPrimaryKey().toString();
         StringBuilder s = Optional.ofNullable(String.format("{table-name=%s, primary-key=%s, fields=%s, dependencies=%s}\n", this.name, pk, this.header, this.dependencies)).map(StringBuilder::new).orElse(null);
         for(Row r: data) s = (s == null ? new StringBuilder("null") : s).append(r).append("\n");
-        return s == null ? null : s.toString();
+        return s == null ? null : s + "---------------\n";
     }
 
     public void addForeignKey(Key key, String tableName) {

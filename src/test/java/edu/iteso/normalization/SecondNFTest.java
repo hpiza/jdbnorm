@@ -87,10 +87,10 @@ public class SecondNFTest {
         assertFalse(result.isNormalized);
         assertNotNull(db);
         assertEquals(db.size(), 3);
-        assertTrue(db.containsTable("Catalog_F1_F2"));
+        assertTrue(db.containsTable("F1_F2"));
         assertTrue(db.containsTable("Catalog_F1"));
         assertTrue(db.containsTable("Catalog_F2"));
-        Table tableF1F2 = db.getTable("Catalog_F1_F2");
+        Table tableF1F2 = db.getTable("F1_F2");
         assertEquals(3, tableF1F2.columns());
         assertEquals(tablePartialDependencies.rows(), tableF1F2.rows());
         Table tableF1 = db.getTable("Catalog_F1");

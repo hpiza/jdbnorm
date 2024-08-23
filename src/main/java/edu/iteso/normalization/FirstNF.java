@@ -122,24 +122,13 @@ public class FirstNF extends Normalizer {
     }
 
     private void findFunctionalDependencies(Table table) {
-        int[] dependencies = new int[table.columns()];
-        int[] rowCounts = new int[table.columns()];
-        for (int i = 0; i < table.columns(); i++) {
-            for (int j = 0; j < table.columns(); j++) {
-                if(i == j) continue;
-                int rowCount = getDependencyCalculator().isDependent(table, i, j);
-                if(rowCount > 0 && getDependencyCalculator().isDependent(table, j, i) <= 0) {
-                    if(rowCounts[j] == 0 || rowCount < rowCounts[j]) {
-                        rowCounts[j] = rowCount;
-                        dependencies[j] = i;
-                    }
-                }
+        for (int i = 0; i < table.columns() - 1; i++) {
+            for (int j = i + 1; j < table.columns(); j++) {
+                boolean iDefinesJ = getDependencyCalculator().isDependent(table, i, j);
+                boolean jDefinesI = getDependencyCalculator().isDependent(table, j, i);
+                if(iDefinesJ) table.addDependency(new Key(table.getFieldName(i)), j);
+                else if(jDefinesI) table.addDependency(new Key(table.getFieldName(j)), i);
             }
-        }
-        for(int j = 0; j < table.columns(); j ++) {
-            if(rowCounts[j] == 0) continue;
-            int i = dependencies[j];
-            table.addDependency(new Key(table.getFieldName(i)), j);
         }
     }
 
@@ -205,49 +194,6 @@ public class FirstNF extends Normalizer {
             table.addDependency(primaryKey, field);
         }
         if (!table.existsDependency(primaryKey)) table.addDependency(table.getPrimaryKey(), null);
-    }
-
-    private void findPrimaryKey1(Table table) {
-        HashSet<Integer> Ap = new HashSet<Integer>();
-        HashSet<Integer> Adef = new HashSet<Integer>();
-        HashSet<Integer> Andf = new HashSet<Integer>();
-        for (int i = 0; i < table.columns(); i++) {
-            //if(!table.isMarked(i)) Ap.add(i);
-            Ap.add(i);
-            Andf.add(i);
-        }
-        int iterations = Andf.size();
-        for (int i = 1; i <= iterations; i++) {
-            Set<Set<Integer>> powerSet = findSubsets(Ap, i);
-            System.out.println(i + ": " + powerSet);
-            tag1: for (Set<Integer> phi : powerSet) {
-                if (phi.size() < i) continue;
-                //System.out.println("Clave candidata: " + phi);
-//				Si hay un atributo en phi ya definido, ignorar la combinación phi
-                for (Integer I : phi) {
-                    if (Adef.contains(I)) continue tag1;
-                }
-//				Por cada atributo J no definido, determinar si phi define a J
-                for (Integer J : Andf) {
-//					Si J ya se encuentra en phi, ignorar
-                    if (phi.contains(J)) continue;
-                    if (getDependencyCalculator().isDependent(table, phi, J) > 0) {
-                        Adef.add(J);
-                        Key key = Key.fromFieldIndices(phi, table);
-                        table.addDependency(key, J);
-                    }
-                }
-                for (Integer J : Adef) {
-                    Andf.remove(J);
-                    Ap.remove(J);
-                }
-            }
-        }
-        table.setPrimaryKey(Key.fromFieldIndices(Ap, table));
-
-//		Si la clave primaria no definió a ningun atributo, se agrega como dependencia con "nadie"
-        Key pk = table.getPrimaryKey();
-        if (!table.existsDependency(pk)) table.addDependency(table.getPrimaryKey(), null);
     }
 
     private static Set<Set<Integer>> findSubsets(Set<Integer> originalSet, int size) {

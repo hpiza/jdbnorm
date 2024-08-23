@@ -1,11 +1,10 @@
-Date,Student,Courses,,,,Program,Coordinator
-14/09/2023,John Smith,Databases,Calculus,Programming,,IDS,Dr Philip Davies
-14/09/2023,Jessica Evans,Calculus,,,,ISC,Dr Philip Davies
-15/09/2023,Jessica Evans,Programming,Compilers,Linear algebra,Software engineering,ISC,Dr Philip Davies
-20/09/2023,Richard Jones,Databases,Information Systems,System governance,,LTI,Mr Roger McCluskey
-30/09/2023,John Smith,Software engineering,Compilers,,,IDS,Dr Philip Davies
-10/10/2023,Sophie Thomas,Databases,Financial mathematics,,,IF,Mr Roger McCluskey
-15/10/2023,Sam Brown,Information systems,System governance,,,LTI,Mr Roger McCluskey
-14/09/2023,John Smith,Algorithmics,Databases,,,IDS,Dr Philip Davies
-14/09/2023,Sophie Thomas,Management,Business models,Databases,,IF,Mr Roger McCluskey
-15/09/2023,Peter Wilson,Databases,Programming,Data structures,,IDS,Dr Philip Davies
+Date,Student,Semester,Courses,,,,Major,Coordinator,Office,Credits,Total
+14/09/2023,John Smith,3,Data structures,Databases,,,Computer science,Roland Johnson,Z123,72,392
+14/09/2023,Jessica Evans,4,Databases,Statistics,,,Data science,Emily Williams,W42,80,384
+15/09/2023,Richard Jones,5,Compilers,Algorithmics,Data structures,,Computer science,Roland Johnson,Z123,96,392
+15/09/2023,John Smith,3,Algorithmics,Software engineering,,,Computer science,Roland Johnson,Z123,72,392
+16/09/2023,Jessica Evans,4,Financial mathematics,,,,Data science,Emily Williams,W42,80,384
+16/09/2023,Fred Brown,6,Databases,Financial mathematics,Statistics,Machine learning,Data science,Emily Williams,W42,64,384
+16/09/2023,Mia Taylor,4,Computer architecture,Compilers,Operating systems,Data structures,Computer engineering,Roland Johnson,Z123,104,398
+16/09/2023,Peter Parker,5,Digital systems,Operating systems,,,Electronics,George Davies,Z105,64,398
+17/09/2023,Peter Parker,5,Analog systems,Calculus,,,Electronics,George Davies,Z105,64,398

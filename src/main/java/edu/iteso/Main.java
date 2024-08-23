@@ -8,13 +8,17 @@ import edu.iteso.normalization.*;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        Table inputTable = Table.fromFile("datasets/albums.csv");
-        Normalizer thirdNF = NormalizerFactory.getThirdNF();
-        //thirdNF.setDependencyCalculator(StandardDependencyCalculator.getInstance());
-        Database albums3FN = thirdNF.normalize(inputTable);
-        Database.toCsvFiles(albums3FN, "Albums");
-        DbScriptFactory.getMysql().createDatabase(albums3FN, "Albums", "albums.script");
-        DbScriptFactory.getMongodb().createDatabase(albums3FN, "Albums", "albums.mongo");
+        Table schoolTable = Table.fromFile("datasets/registrations.csv");
+        Database schoolDB =  NormalizerFactory.getThirdNF().normalize(schoolTable);
+        System.out.println(schoolDB);
+        System.out.println();
+        Table albumTable = Table.fromFile("datasets/albums.csv");
+        Database musicDB =  NormalizerFactory.getThirdNF().normalize(albumTable);
+        System.out.println(musicDB);
+
+        Database.toCsvFiles(schoolDB, "School");
+        DbScriptFactory.getMysql().createDatabase(musicDB, "Music", "Music.script");
+        DbScriptFactory.getMongodb().createDatabase(musicDB, "Music", "Music.mongo");
     }
 
 }

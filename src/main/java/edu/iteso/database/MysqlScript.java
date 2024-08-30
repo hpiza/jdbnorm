@@ -26,7 +26,7 @@ public class MysqlScript extends DbScript {
 
     @Override
     public String addPrimaryKey(String tableName, Key primaryKey) {
-        return String.format("ALTER TABLE %s ADD PRIMARY KEY(%s);", tableName, primaryKey.toString());
+        return String.format("ALTER TABLE %s ADD PRIMARY KEY(%s);", tableName, primaryKey.toString().replace("<","").replace(">", ""));
     }
 
     @Override

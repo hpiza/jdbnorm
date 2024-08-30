@@ -8,7 +8,7 @@ public class MongoScript extends DbScript {
 
     @Override
     public String createDatabase(String dbName) {
-        return String.format("db.createCollection(%s)", dbName);
+        return "";
     }
 
     @Override
